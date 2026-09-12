@@ -40,6 +40,10 @@ class ChunkMetadata(BaseModel):
     classification: str | None = None    # internal | restricted | external-unverified
     section: str | None = None           # chunk heading, filled by the chunker later
 
+class Chunk(BaseModel):
+    text: str
+    metadata: ChunkMetadata
+    
 
 class RetrievedChunk(BaseModel):
     text: str
@@ -51,12 +55,11 @@ class Recommendation(BaseModel):
     next_action: NextAction
     confidence: Confidence
     cited_evidence: list[RetrievedChunk] = Field(default_factory=list)
-    calculations: dict[str, Decimal] = Field(default_factory=dict)
     assumptions: list[str] = Field(default_factory=list)
     exceptions: list[str] = Field(default_factory=list)
     rationale: str
 
-    
+
 class SourcedFact(BaseModel):
     statement: str
     document_ids: list[str]   # which corpus docs back this fact
