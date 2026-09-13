@@ -51,7 +51,7 @@ def submit_finance_decision(payload: SubmitDecisionInput) -> SubmitDecisionOutpu
     result = SubmitDecisionOutput(
         idempotency_key=payload.idempotency_key, case_id=payload.case_id,
         action=payload.action, status=status, replayed=False,
-        message=f"{status} (simulated — no real money moved)",
+        message=f"{status} (simulated - no real money moved)",
     )
     _LEDGER[payload.idempotency_key] = result
     return result
