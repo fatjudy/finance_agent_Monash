@@ -12,3 +12,4 @@ env/
 __MACOSX/
 .idea/
 .vscode/
+runs/
