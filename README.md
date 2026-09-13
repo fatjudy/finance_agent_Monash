@@ -126,6 +126,27 @@ python -m src.cli eval
 
 ---
 
+## Reproducible environment (Docker / Make)
+
+Environment artefacts for the local setup:
+
+- **`Dockerfile`** — builds an identical environment and runs the CLI as its entrypoint:
+  ```bash
+  docker build -t finance-agent-monash .
+  docker run --rm -e ANTHROPIC_API_KEY=sk-ant-... finance-agent-monash eval
+  ```
+  The image bundles `src/`, `data/`, and `tests/`; the embedding model downloads on first use and run
+  state persists under `/app/runs`.
+- **`Makefile`** — codifies the common commands as targets: `install`, `test`, `eval`, `demo`,
+  `docker-build`, `docker-run`.
+- **`requirements.txt`** — pinned dependency versions (dependency lock).
+- **`.env.example`** — configuration template (no secrets).
+
+These are the infrastructure-as-code / scripts for the chosen **local** setup; no cloud deployment export
+is required.
+
+---
+
 ## Real vs. simulated integrations
 
 | Component | Real or mock |
