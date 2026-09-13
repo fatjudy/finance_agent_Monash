@@ -187,8 +187,10 @@ src/
   eval.py              the five FIN evaluation cases
 tests/                 deterministic unit/contract tests (pytest)
 data/finance_rag_corpus/   15 finance policy markdown documents
-docs/architecture.md   architecture + trust-boundary diagram (Mermaid) + component manifest
-docs/DESIGN_NOTE.md    design note (orchestration, RAG, trust, failure handling)
+docs/architecture.md   architecture diagram (image + Mermaid) + trust boundaries + component manifest
+docs/Architecture_Diagram.png   rendered architecture image
+docs/DESIGN_NOTE.md / .pdf   design note (orchestration, RAG, trust, failure handling)
+docs/transcript_*.txt  sample runs (FIN-001 success, FIN-002 exception)
 ```
 
 ---

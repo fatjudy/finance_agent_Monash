@@ -1,0 +1,18 @@
+# Sample transcript — FIN-001 valid three-way match (successful approval flow)
+
+$ python -m src.cli start --case FIN-001 --invoice INV-7777 --vendor "Acme Supplies" --amount 1250.00 --currency AUD --date 2026-09-10 --po PO-5001 --thread TX-001
+run_id: TX-001
+status: AWAITING_APPROVAL
+approval_request: {'type': 'approval_request', 'case_id': 'FIN-001', 'recommended_action': 'request_approval', 'amount': '1250.00', 'currency': 'AUD', 'rationale': 'Invoice amount matches PO total exactly (0% variance), quantities match, and no exceptions were detected. Standard three-way match confirmed; ready for human approval to pay.'}
+
+To resolve:  python -m src.cli approve --thread TX-001   (add --reject to reject)
+
+$ python -m src.cli approve --thread TX-001
+run_id: TX-001 | resumed with approved = True
+status: completed
+decision: posted | action: post
+recommendation: request_approval (high)
+rationale: Invoice amount matches PO total exactly (0% variance), quantities match, and no exceptions were detected. Standard three-way match confirmed; ready for human approval to pay.
+calculations: {'invoice_amount': '1250.00', 'po_total': '1250.00', 'variance_pct': '0', 'ordered_qty': '10', 'received_qty': '10'}
+policy_findings: []
+actions_taken: ['posted (simulated - no real money moved)']

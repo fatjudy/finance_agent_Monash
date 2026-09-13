@@ -1,0 +1,29 @@
+# Sample transcript â€” FIN-002 duplicate invoice (exception flow, no payment)
+
+$ python -m src.cli start --case FIN-002 --invoice INV-2045 --vendor "Acme Supplies" --amount 4800.00 --currency AUD --date 2026-07-28 --thread TX-002
+run_id: TX-002
+status: completed
+recommendation: reject (high)
+rationale: Reconciliation flags this invoice as a duplicate of an already paid invoice and lacking a purchase order, both of which preclude payment approval per policy requiring valid, once-only payment to verified obligations (FIN-POL-001 §1).
+calculations: {'invoice_amount': '4800.00'}
+policy_findings: ['no_purchase_order', 'duplicate_of_paid_invoice']
+actions_taken: ['rejected (simulated - no real money moved)']
+
+$ python -m src.cli get --thread TX-002
+run_id: TX-002
+status: completed
+steps: 5
+audit:
+   2026-09-13T11:36:19+00:00 | retrieve: 5 chunks | 6684ms
+   2026-09-13T11:36:19+00:00 | get_vendor_record: found=True | 0ms
+   2026-09-13T11:36:19+00:00 | check_invoice_history: 1 matches | 0ms
+   2026-09-13T11:36:19+00:00 | get_purchase_order: skipped (non-PO purchase)
+   2026-09-13T11:36:19+00:00 | reconcile: exceptions=['no_purchase_order', 'duplicate_of_paid_invoice']
+   2026-09-13T11:36:21+00:00 | recommend: reject (high) | 2469ms
+   2026-09-13T11:36:21+00:00 | submit: rejected (replayed=False)
+   2026-09-13T11:36:21+00:00 | finalize: result assembled
+recommendation: reject (high)
+rationale: Reconciliation flags this invoice as a duplicate of an already paid invoice and lacking a purchase order, both of which preclude payment approval per policy requiring valid, once-only payment to verified obligations (FIN-POL-001 §1).
+calculations: {'invoice_amount': '4800.00'}
+policy_findings: ['no_purchase_order', 'duplicate_of_paid_invoice']
+actions_taken: ['rejected (simulated - no real money moved)']
