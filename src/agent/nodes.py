@@ -19,6 +19,7 @@ from src.tools.invoice_history import check_invoice_history, CheckInvoiceInput, 
 from src.tools.decision import submit_finance_decision, SubmitDecisionInput, DecisionAction
 
 MAX_RETRIES = 3
+BASE_CURRENCY = "AUD"
 
 
 def _event(msg: str, ms: float | None = None) -> str:
@@ -29,7 +30,13 @@ def _event(msg: str, ms: float | None = None) -> str:
 
 def retrieve_node(state: AgentState) -> dict:
     req = state.request
-    query = f"{req.vendor} invoice {req.amount} {req.currency}"
+    # Topic-driven query: policy terms that actually appear in the corpus, adapted to case signals.
+    topics = ["invoice approval", "three-way matching", "duplicate payment"]
+    if req.currency != BASE_CURRENCY:
+        topics.append("foreign currency invoice")
+    if req.amount > Decimal("10000"):
+        topics.append("delegated financial authority")
+    query = " ".join(topics)
     if req.notes:
         query += f" {req.notes}"
 
