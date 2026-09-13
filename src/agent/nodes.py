@@ -11,7 +11,9 @@ from src.tools.purchase_order import ApprovalStatus
 from src.tools.invoice_history import InvoiceStatus
 from src.config import get_client, MODEL
 from src.models import Recommendation, RecommendationDraft, NextAction, Confidence
-
+from langgraph.types import interrupt
+from src.tools.decision import submit_finance_decision, SubmitDecisionInput, DecisionAction
+from src.models import FinalResult, SourcedFact
 
 def retrieve_node(state: AgentState) -> dict:
     # 1. READ from State → build the query
@@ -211,3 +213,55 @@ def recommend_node(state: AgentState, max_attempts: int = 2) -> dict:
     )
     audit.append(f"recommend: {draft.next_action.value} ({draft.confidence.value})")
     return {"recommendation": rec, "steps": state.steps + 1, "audit": audit}
+
+def approval_node(state: AgentState) -> dict:
+    rec = state.recommendation
+    decision = interrupt({                       # PAUSE here; surface this to the human
+        "type": "approval_request",
+        "case_id": state.request.case_id,
+        "recommended_action": rec.next_action.value,
+        "amount": str(state.request.amount),
+        "currency": state.request.currency,
+        "rationale": rec.rationale,
+    })
+    approved = bool(decision.get("approved")) if isinstance(decision, dict) else bool(decision)
+    return {"approved": approved, "status": "running",
+            "audit": state.audit + [f"approval resolved: approved={approved}"]}
+
+
+def submit_node(state: AgentState) -> dict:
+    rec = state.recommendation
+    key = f"{state.request.case_id}:{state.request.invoice_ref}"
+    if rec.next_action is NextAction.REQUEST_APPROVAL:
+        action = DecisionAction.POST if state.approved else DecisionAction.REJECT
+        approved = bool(state.approved)
+    elif rec.next_action is NextAction.HOLD:
+        action, approved = DecisionAction.HOLD, False
+    else:                                        # REJECT
+        action, approved = DecisionAction.REJECT, False
+
+    out = submit_finance_decision(SubmitDecisionInput(
+        case_id=state.request.case_id, action=action,
+        amount=state.request.amount, currency=state.request.currency,
+        approved=approved, idempotency_key=key,
+    ))
+    return {"decision": out, "steps": state.steps + 1,
+            "audit": state.audit + [f"submit: {out.status} (replayed={out.replayed})"]}
+
+
+def finalize_node(state: AgentState) -> dict:
+    rec = state.recommendation
+    cited_ids = sorted({c.metadata.document_id for c in rec.cited_evidence})
+    sourced = [SourcedFact(statement=rec.rationale, document_ids=cited_ids)] if cited_ids else []
+    result = FinalResult(
+        case_id=state.request.case_id,
+        recommendation=rec,
+        sourced_facts=sourced,
+        calculations=state.calculations,
+        inferences=rec.assumptions,
+        unknowns=[e for e in state.exceptions if any(w in e for w in ("missing", "not_found", "timeout"))],
+        policy_findings=state.exceptions,
+        actions_taken=[state.decision.message] if state.decision else [],
+    )
+    return {"result": result, "status": "completed",
+            "audit": state.audit + ["finalize: result assembled"]}
