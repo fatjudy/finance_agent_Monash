@@ -10,7 +10,6 @@ class NextAction(str, Enum):
     REJECT = "reject"                       # recommend rejection
     REQUEST_INFO = "request_info"           # FIN-004: missing evidence, can't decide
 
-
 class Confidence(str, Enum):
     LOW = "low"
     MEDIUM = "medium"
@@ -28,6 +27,8 @@ class ProcessingRequest(BaseModel):
     vendor: str
     amount: Decimal
     currency: str = Field(..., min_length=3, max_length=3)
+    invoice_date: date                 # NEW — every invoice has a date
+    po_number: str | None = None       # NEW — optional (non-PO purchases exist)
     notes: str | None = None
 
 
@@ -59,6 +60,12 @@ class Recommendation(BaseModel):
     exceptions: list[str] = Field(default_factory=list)
     rationale: str
 
+class RecommendationDraft(BaseModel):
+    next_action: NextAction
+    confidence: Confidence
+    rationale: str
+    assumptions: list[str] = Field(default_factory=list)
+    cited_document_ids: list[str] = Field(default_factory=list)
 
 class SourcedFact(BaseModel):
     statement: str
