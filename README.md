@@ -23,7 +23,8 @@ ProcessingRequest
    → finalize   (typed FinalResult separating facts / calculations / findings / actions)
 ```
 
-The full architecture is in [`docs/architecture.svg`](docs/architecture.svg).
+The full architecture (with trust boundaries and a component manifest) is in
+[`docs/architecture.md`](docs/architecture.md).
 
 ---
 
@@ -186,7 +187,8 @@ src/
   eval.py              the five FIN evaluation cases
 tests/                 deterministic unit/contract tests (pytest)
 data/finance_rag_corpus/   15 finance policy markdown documents
-docs/architecture.svg  architecture + trust-boundary diagram
+docs/architecture.md   architecture + trust-boundary diagram (Mermaid) + component manifest
+docs/DESIGN_NOTE.md    design note (orchestration, RAG, trust, failure handling)
 ```
 
 ---
